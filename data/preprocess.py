@@ -65,6 +65,8 @@ def preprocess_hdfs(
     hash_id = hashlib.md5(str(param_list).encode("utf-8")).hexdigest()[0:8]
     os.makedirs(f"./processed/{hash_id}", exist_ok=True)
 
+    with open(f"./processed/{hash_id}/session_all.pkl", "wb") as fw:
+        pickle.dump(dict(session_dict), fw)
     with open(f"./processed/{hash_id}/session_train.pkl", "wb") as fw:
         pickle.dump(session_train, fw)
     with open(f"./processed/{hash_id}/session_test.pkl", "wb") as fw:
