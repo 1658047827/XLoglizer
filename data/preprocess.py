@@ -21,7 +21,7 @@ def preprocess_hdfs(
     label_data["Label"] = label_data["Label"].map({"Anomaly": 1, "Normal": 0})
     blk_label = dict(zip(label_data["BlockId"], label_data["Label"]))
 
-    session_dict = defaultdict(lambda: {"templates": [], "label": 0})
+    session_dict = defaultdict(lambda: {"templates": [], "anomaly": 0})
 
     for _, row in structured_log.iterrows():
         # Extract all blk_id from this log and use a set to deduplicate.
@@ -30,7 +30,7 @@ def preprocess_hdfs(
             session_dict[blk_id]["templates"].append(row["EventTemplate"])
 
     for blk_id in session_dict.keys():
-        session_dict[blk_id]["label"] = blk_label[blk_id]
+        session_dict[blk_id]["anomaly"] = blk_label[blk_id]
 
     session_id = [key for key in session_dict.keys()]
     if shuffle:
@@ -40,8 +40,8 @@ def preprocess_hdfs(
     test_num = int(test_ratio * len(session_id))
 
     if not include_anomaly:
-        normal_id = [key for key in session_id if session_dict[key]["label"] == 0]
-        anomaly_id = [key for key in session_id if session_dict[key]["label"] == 1]
+        normal_id = [key for key in session_id if session_dict[key]["anomaly"] == 0]
+        anomaly_id = [key for key in session_id if session_dict[key]["anomaly"] == 1]
 
         session_id_train = normal_id[0:train_num]
         session_id_test = normal_id[train_num:] + anomaly_id
@@ -54,8 +54,8 @@ def preprocess_hdfs(
     session_train = {k: session_dict[k] for k in session_id_train}
     session_test = {k: session_dict[k] for k in session_id_test}
 
-    session_labels_train = [v["label"] for v in session_train.values()]
-    session_labels_test = [v["label"] for v in session_test.values()]
+    session_labels_train = [v["anomaly"] for v in session_train.values()]
+    session_labels_test = [v["anomaly"] for v in session_test.values()]
 
     train_anomaly_rate = sum(session_labels_train) / len(session_labels_train)
     test_anomaly_rate = sum(session_labels_test) / len(session_labels_test)
