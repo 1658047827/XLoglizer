@@ -27,7 +27,7 @@ def preprocess_hdfs(
         # Extract all blk_id from this log and use a set to deduplicate.
         blk_id_set = set(re.findall(r"(blk_-?\d+)", row["Content"]))
         for blk_id in blk_id_set:
-            session_dict[blk_id]["templates"].append(row["EventTemplate"])
+            session_dict[blk_id]["templates"].append(row["EventId"])
 
     for blk_id in session_dict.keys():
         session_dict[blk_id]["anomaly"] = blk_label[blk_id]
