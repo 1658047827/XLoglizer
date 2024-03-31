@@ -1,7 +1,15 @@
 import os
 import random
 import torch
+import logging
 import numpy as np
+
+
+def set_log():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
 
 
 def seed_everything(seed=47):

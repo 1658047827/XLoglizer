@@ -5,7 +5,7 @@
 /dashboard/node_modules
 
 # loglizer
-/loglizer/*/__pycache__
+/loglizer/**/__pycache__
 /loglizer/data/HDFS_v1/*.pkl
 
 # data
