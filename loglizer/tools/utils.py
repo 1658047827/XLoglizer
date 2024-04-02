@@ -12,10 +12,10 @@ def set_log():
     )
 
 
-def seed_everything(seed=47):
+def seed_everything(seed=42):
     random.seed(seed)
-    os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     torch.manual_seed(seed)
-    # torch.cuda.manual_seed(seed)
-    # torch.backends.cudnn.deterministic = True
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
