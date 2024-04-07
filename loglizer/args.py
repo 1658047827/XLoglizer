@@ -2,6 +2,7 @@ import os
 import argparse
 import json
 from feature import LabelType, FeatureType, WindowType
+from tools.detect import DetectGranularity
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -13,7 +14,7 @@ class Args:
 
         # model args
         self.parser.add_argument("--input_size", default=1, type=int)
-        self.parser.add_argument("--hidden_size", default=64, type=int)
+        self.parser.add_argument("--hidden_size", default=128, type=int)
         self.parser.add_argument("--num_layers", default=1, type=int)
 
         # dataset args
@@ -28,12 +29,13 @@ class Args:
         self.parser.add_argument("--stride", default=1, type=int)
 
         # train args
-        self.parser.add_argument("--epochs", default=15, type=int)
+        self.parser.add_argument("--epochs", default=30, type=int)
         self.parser.add_argument("--batch_size", default=1024, type=int)
         self.parser.add_argument("--learning_rate", default=0.01, type=float)
 
         # detect args
-        self.parser.add_argument("--topk", default=5, type=int)
+        self.parser.add_argument("--topk", default=9, type=int)
+        self.parser.add_argument("--detect_granularity", type=DetectGranularity, choices=list(DetectGranularity), default=DetectGranularity.SESSION)
 
         # other args
         self.parser.add_argument("--seed", type=int, default=42)
@@ -57,3 +59,4 @@ class Args:
         self.args["label_type"] = LabelType(self.args["label_type"])
         self.args["feature_type"] = FeatureType(self.args["feature_type"])
         self.args["window_type"] = WindowType(self.args["window_type"])
+        self.args["detect_granularity"] = DetectGranularity(self.args["detect_granularity"])
