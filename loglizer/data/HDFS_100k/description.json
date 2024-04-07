@@ -1,0 +1,24 @@
+{
+    "total_num": 7940,
+    "normal_num": 7627,
+    "anomaly_num": 313,
+    "shuffle": true,
+    "train": {
+        "ratio": 0.8,
+        "num": 6352,
+        "normal": 6352,
+        "anomaly": 0
+    },
+    "valid": {
+        "ratio": 0.1,
+        "num": 794,
+        "normal": 794,
+        "anomaly": 0
+    },
+    "test": {
+        "ratio": 0.1,
+        "num": 794,
+        "normal": 481,
+        "anomaly": 313
+    }
+}
