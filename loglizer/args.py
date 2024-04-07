@@ -12,8 +12,13 @@ class Args:
         self.args = None
 
         # model args
+        self.parser.add_argument("--input_size", default=1, type=int)
         self.parser.add_argument("--hidden_size", default=64, type=int)
         self.parser.add_argument("--num_layers", default=1, type=int)
+
+        # dataset args
+        self.parser.add_argument("--dataset", default="HDFS", type=str)
+        self.parser.add_argument("--data_dir", default="HDFS_100k", type=str)
 
         # feature args
         self.parser.add_argument("--label_type", type=LabelType, choices=list(LabelType), default=LabelType.NEXT_LOG)
@@ -23,9 +28,12 @@ class Args:
         self.parser.add_argument("--stride", default=1, type=int)
 
         # train args
-        self.parser.add_argument("--epochs", default=5, type=int)
+        self.parser.add_argument("--epochs", default=15, type=int)
         self.parser.add_argument("--batch_size", default=1024, type=int)
         self.parser.add_argument("--learning_rate", default=0.01, type=float)
+
+        # detect args
+        self.parser.add_argument("--topk", default=5, type=int)
 
         # other args
         self.parser.add_argument("--seed", type=int, default=42)

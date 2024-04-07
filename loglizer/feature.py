@@ -3,18 +3,19 @@ from enum import Enum
 from torch.utils.data import TensorDataset
 
 
-class LabelType(Enum):
-    NEXT_LOG = 1
-    ANOMALY = 2
+class LabelType(str, Enum):
+    NEXT_LOG = "next_log"
+    ANOMALY = "anomaly"
 
 
-class FeatureType(Enum):
-    SEQUENTIAL = 1
-    SEMANTIC = 2
+class FeatureType(str, Enum):
+    SEQUENTIAL = "sequential"
+    SEMANTIC = "semantic"
 
 
-class WindowType(Enum):
-    SLIDING = 1
+class WindowType(str, Enum):
+    SLIDING = "sliding"
+    SESSION = "session"
 
 
 class FeatureExtractor:
@@ -33,9 +34,16 @@ class FeatureExtractor:
         self.stride = stride
         self.meta_data = {}
 
-    def generate(self, session_dict):
+    def compute_num_window(self, seq_len):
+        # if seq_len <= self.window_size:
+        #     return 0
+        # else:
+        return 1 + (seq_len - 1 - self.window_size) // self.stride
+
+    def sliding_window(self, session_dict):
         inputs = []
         outputs = []
+        anomalys = []
         for session_id, data in session_dict.items():
             i = 0
             eids = data["eids"]
@@ -44,9 +52,12 @@ class FeatureExtractor:
                 inputs.append(eids[i : i + self.window_size])
                 outputs.append(eids[i + self.window_size])
                 i += self.stride
-            if i == 0:
-                pass
-        return TensorDataset(torch.tensor(inputs), torch.tensor(outputs))
+            # if i == 0:
+            #     eids.extend([0] * (self.window_size - session_len))
+            #     inputs.append(eids)
+            #     outputs.append(0)
+            anomalys.extend([data["anomaly"]] * self.compute_num_window(session_len))    
+        return TensorDataset(torch.tensor(inputs, dtype=torch.float), torch.tensor(outputs), torch.tensor(anomalys))
 
     def fit(self, eid2template):
         self.eid2template = eid2template
@@ -57,5 +68,5 @@ class FeatureExtractor:
         elif self.label_type == LabelType.ANOMALY:
             self.meta_data["num_labels"] = 2
 
-    def transform(self, session_dict, save=False):
-        return self.generate(session_dict)
+    def transform(self, session_dict):
+        return self.sliding_window(session_dict)
