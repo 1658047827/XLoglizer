@@ -11,8 +11,8 @@ if __name__ == "__main__":
     template_file = f"{file_dir}/preprocessed/HDFS.log_templates.csv"
     dump_dir = f"{file_dir}/../../loglizer/data/HDFS_DeepLog"
     shuffle = True
-    valid_ratio = 0.001
-    test_ratio = 0.99
+    valid_ratio = 0.002
+    test_ratio = 0.985
     os.makedirs(dump_dir, exist_ok=True)
 
     traces_df = pd.read_csv(trace_file, engine="c", na_filter=False, memory_map=True)
