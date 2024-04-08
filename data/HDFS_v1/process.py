@@ -9,10 +9,10 @@ if __name__ == "__main__":
     file_dir = os.path.dirname(os.path.abspath(__file__))
     trace_file = f"{file_dir}/preprocessed/Event_traces.csv"
     template_file = f"{file_dir}/preprocessed/HDFS.log_templates.csv"
-    dump_dir = f"{file_dir}/../../loglizer/data/HDFS_v1"
+    dump_dir = f"{file_dir}/../../loglizer/data/HDFS_DeepLog"
     shuffle = True
-    valid_ratio = 0.1
-    test_ratio = 0.1
+    valid_ratio = 0.001
+    test_ratio = 0.99
     os.makedirs(dump_dir, exist_ok=True)
 
     traces_df = pd.read_csv(trace_file, engine="c", na_filter=False, memory_map=True)
