@@ -1,7 +1,8 @@
 import torch
 import logging
-import tracemalloc
+import time
 import pandas as pd
+import numpy as np
 from tqdm import tqdm
 from enum import Enum
 from collections import defaultdict
@@ -32,11 +33,8 @@ class Detector:
 
     @torch.no_grad()
     def predict(self, test_loader):
-        tracemalloc.start()  # 开始跟踪内存分配
-
         self.model.eval()
         store = defaultdict(list)
-        preds_topk = []
 
         for batch in tqdm(test_loader):
             x = batch["feature"].view(-1, self.window_size, self.input_size).to(self.device)
@@ -50,12 +48,14 @@ class Detector:
 
             store["session_id"].extend(batch["session_id"])
             store["anomaly"].extend(batch["anomaly"])
-            preds_topk.extend(preds)
+            for k in range(self.topk):
+                store[f"pred_{k + 1}"].extend(preds[:, k])
 
+        store["anomaly"] = np.array(store["anomaly"])
+        for k in range(self.topk):
+            store[f"pred_{k + 1}"] = np.array(store[f"pred_{k + 1}"])
+        
         df = pd.DataFrame(store)
-        topk_df = pd.DataFrame(preds_topk)
-        for g in range(1, self.topk + 1):
-            df[f"pred_{g}"] = topk_df[g - 1]
 
         if self.detect_granularity == DetectGranularity.SESSION:
             session_df = df.groupby("session_id", as_index=False).sum()
@@ -80,8 +80,3 @@ class Detector:
                 "f1": f1,
                 "accuracy": accuracy,
             })
-
-        snapshot = tracemalloc.take_snapshot()  # 获取内存快照
-        top_stats = snapshot.statistics('lineno')
-        for stat in top_stats:
-            print(stat)
