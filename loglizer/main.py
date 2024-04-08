@@ -76,30 +76,31 @@ if __name__ == "__main__":
         criterion,
         args["window_size"],
         args["input_size"],
+        f"{file_dir}/checkpoints/{record_id}.pth",
     )
     trainer.fit(dataloader_train, dataloader_valid, args["epochs"])
 
-    with open(f"{file_dir}/data/{args['data_dir']}/session_test.pkl", "rb") as fr:
-        session_test = pickle.load(fr)
+    # with open(f"{file_dir}/data/{args['data_dir']}/session_test.pkl", "rb") as fr:
+    #     session_test = pickle.load(fr)
 
-    session_test = extractor.transform(session_test)
+    # session_test = extractor.transform(session_test)
 
-    dataset_test = LogDataset(session_test)
+    # dataset_test = LogDataset(session_test)
 
-    dataloader_test = DataLoader(
-        dataset_test,
-        4096,
-        shuffle=True,
-        collate_fn=log_collate,
-        pin_memory=True,
-    )
+    # dataloader_test = DataLoader(
+    #     dataset_test,
+    #     4096,
+    #     shuffle=True,
+    #     collate_fn=log_collate,
+    #     pin_memory=True,
+    # )
 
-    detector = Detector(
-        deeplog,
-        device,
-        args["window_size"],
-        args["input_size"],
-        args["topk"],
-        args["detect_granularity"],
-    )
-    detector.predict(dataloader_test)
+    # detector = Detector(
+    #     deeplog,
+    #     device,
+    #     args["window_size"],
+    #     args["input_size"],
+    #     args["topk"],
+    #     args["detect_granularity"],
+    # )
+    # detector.predict(dataloader_test)
