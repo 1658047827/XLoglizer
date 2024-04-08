@@ -30,6 +30,7 @@ class Trainer:
             if loss < best_loss:
                 best_loss = loss
                 self.save_model()
+        self.load_model(self.save_path)
 
     def train(self, epoch, train_loader):
         self.model.train()
