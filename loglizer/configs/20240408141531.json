@@ -1,0 +1,18 @@
+{
+    "input_size": 1,
+    "hidden_size": 128,
+    "num_layers": 2,
+    "dataset": "HDFS",
+    "data_dir": "HDFS_100k",
+    "label_type": "next_log",
+    "feature_type": "sequential",
+    "window_type": "sliding",
+    "window_size": 10,
+    "stride": 1,
+    "epochs": 50,
+    "batch_size": 1024,
+    "learning_rate": 0.01,
+    "topk": 9,
+    "detect_granularity": "session",
+    "seed": 42
+}

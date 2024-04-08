@@ -6,7 +6,6 @@
 
 # loglizer
 /loglizer/**/__pycache__
-/loglizer/data/HDFS_v1/*.pkl
 
 # data
 /data/HDFS_v1/preprocessed
