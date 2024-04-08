@@ -1,3 +1,4 @@
+import numpy as np
 from enum import Enum
 
 
@@ -49,14 +50,14 @@ class FeatureExtractor:
                 windows.append(eids[i : i + self.window_size])
                 labels.append(eids[i + self.window_size])
                 i += self.stride
-            # if i == 0:
-            #     eids.extend([0] * (self.window_size - session_len))
-            #     inputs.append(eids)
-            #     outputs.append(0)  
+            if i == 0:
+                eids.extend([0] * (self.window_size - session_len))
+                windows.append(eids)
+                labels.append(0)
 
             session_dict[session_id]["windows"] = windows
             session_dict[session_id]["labels"] = labels
-        
+
         return session_dict
 
     def fit(self, eid2template):

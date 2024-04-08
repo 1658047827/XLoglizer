@@ -1,8 +1,8 @@
 import torch
 import logging
-import tqdm
 import tracemalloc
 import pandas as pd
+from tqdm import tqdm
 from enum import Enum
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
@@ -81,7 +81,7 @@ class Detector:
                 "accuracy": accuracy,
             })
 
-            snapshot = tracemalloc.take_snapshot()  # 获取内存快照
-            top_stats = snapshot.statistics('lineno')
-            for stat in top_stats:
-                print(stat)
+        snapshot = tracemalloc.take_snapshot()  # 获取内存快照
+        top_stats = snapshot.statistics('lineno')
+        for stat in top_stats:
+            print(stat)
