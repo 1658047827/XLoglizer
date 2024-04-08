@@ -1,10 +1,11 @@
 import torch
 import logging
-import numpy as np
+import tqdm
+import tracemalloc
 import pandas as pd
 from enum import Enum
 from collections import defaultdict
-from sklearn.metrics import precision_score, f1_score, recall_score, accuracy_score
+from sklearn.metrics import confusion_matrix
 
 
 class DetectGranularity(str, Enum):
@@ -29,25 +30,27 @@ class Detector:
         self.topk = topk
         self.detect_granularity = detect_granularity
 
+    @torch.no_grad()
     def predict(self, test_loader):
+        tracemalloc.start()  # 开始跟踪内存分配
+
         self.model.eval()
         store = defaultdict(list)
         preds_topk = []
 
-        with torch.no_grad():
-            for batch in test_loader:
-                x = batch["feature"].view(-1, self.window_size, self.input_size).to(self.device)
-                y = batch["label"].to(self.device)
-                output = self.model(x)
+        for batch in tqdm(test_loader):
+            x = batch["feature"].view(-1, self.window_size, self.input_size).to(self.device)
+            y = batch["label"].to(self.device)
+            output = self.model(x)
 
-                _, topk_indices = torch.topk(output, self.topk)
-                topk_matches = topk_indices.eq(y.view(-1, 1)).int()
-                acc_matches = torch.cumsum(topk_matches, dim=1) > 0
-                preds = (~acc_matches).int().cpu().numpy()
+            _, topk_indices = torch.topk(output, self.topk)
+            topk_matches = topk_indices.eq(y.view(-1, 1)).int()
+            acc_matches = torch.cumsum(topk_matches, dim=1) > 0
+            preds = (~acc_matches).int().cpu().numpy()
 
-                store["session_id"].extend(batch["session_id"])
-                store["anomaly"].extend(batch["anomaly"])
-                preds_topk.extend(preds)
+            store["session_id"].extend(batch["session_id"])
+            store["anomaly"].extend(batch["anomaly"])
+            preds_topk.extend(preds)
 
         df = pd.DataFrame(store)
         topk_df = pd.DataFrame(preds_topk)
@@ -56,21 +59,29 @@ class Detector:
 
         if self.detect_granularity == DetectGranularity.SESSION:
             session_df = df.groupby("session_id", as_index=False).sum()
-            print(session_df)
 
         actual = (session_df["anomaly"] > 0).astype(int)
         for g in range(1, self.topk + 1):
             pred = (session_df[f"pred_{g}"] > 0).astype(int)
 
-            precision = precision_score(actual, pred)
-            recall = recall_score(actual, pred)
-            f1 = f1_score(actual, pred)
-            accuracy = accuracy_score(actual, pred)
-
+            cm = confusion_matrix(actual, pred)
+            tn, fp, fn, tp = cm.ravel()
+            precision = tp / (tp + fp)
+            recall = tp / (tp + fn)
+            f1 = 2 * precision * recall / (precision + recall)
+            accuracy = (tp + tn) / (tp + fp + fn + tn)
+            
             logging.getLogger("loglizer").info({
                 "topk": g,
+                "false positive": fp,
+                "false negative": fn,
                 "precision": precision,
                 "recall": recall,
                 "f1": f1,
-                "accuracy": accuracy 
+                "accuracy": accuracy,
             })
+
+            snapshot = tracemalloc.take_snapshot()  # 获取内存快照
+            top_stats = snapshot.statistics('lineno')
+            for stat in top_stats:
+                print(stat)
