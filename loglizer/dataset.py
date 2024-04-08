@@ -42,5 +42,5 @@ def log_collate(batch):
         "session_id": [sample["session_id"] for sample in batch],
         "feature": torch.tensor([sample["feature"] for sample in batch], dtype=torch.float),
         "label": torch.tensor([sample["label"] for sample in batch]),
-        "anomaly": torch.tensor([sample["anomaly"] for sample in batch]),
+        "anomaly": [sample["anomaly"] for sample in batch],
     }

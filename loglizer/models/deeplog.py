@@ -13,3 +13,6 @@ class DeepLog(nn.Module):
         out, _ = self.lstm(input)
         out = self.fc(out[:, -1, :])
         return out
+
+    def profile(self, input):
+        pass

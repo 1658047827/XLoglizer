@@ -22,9 +22,9 @@ class Trainer:
     def train(self, epoch, train_loader):
         self.model.train()
         epoch_loss = 0.0
-        for x, y, _ in train_loader:
-            x = x.view(-1, self.window_size, self.input_size).to(self.device)
-            y = y.to(self.device)
+        for batch in train_loader:
+            x = batch["feature"].view(-1, self.window_size, self.input_size).to(self.device)
+            y = batch["label"].to(self.device)
             output = self.model(x)
             loss = self.criterion(output, y)
             loss.backward()
@@ -38,9 +38,9 @@ class Trainer:
         self.model.eval()
         valid_loss = 0.0
         with torch.no_grad():
-            for x, y, _ in valid_loader:
-                x = x.view(-1, self.window_size, self.input_size).to(self.device)
-                y = y.to(self.device)
+            for batch in valid_loader:
+                x = batch["feature"].view(-1, self.window_size, self.input_size).to(self.device)
+                y = batch["label"].to(self.device)
                 output = self.model(x)
                 valid_loss += self.criterion(output, y).item()
         valid_loss /= len(valid_loader)

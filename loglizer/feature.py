@@ -1,6 +1,4 @@
-import torch
 from enum import Enum
-from torch.utils.data import TensorDataset
 
 
 class LabelType(str, Enum):
@@ -41,23 +39,25 @@ class FeatureExtractor:
         return 1 + (seq_len - 1 - self.window_size) // self.stride
 
     def sliding_window(self, session_dict):
-        inputs = []
-        outputs = []
-        anomalys = []
         for session_id, data in session_dict.items():
             i = 0
+            windows = []
+            labels = []
             eids = data["eids"]
             session_len = len(eids)
             while i + self.window_size < session_len:
-                inputs.append(eids[i : i + self.window_size])
-                outputs.append(eids[i + self.window_size])
+                windows.append(eids[i : i + self.window_size])
+                labels.append(eids[i + self.window_size])
                 i += self.stride
             # if i == 0:
             #     eids.extend([0] * (self.window_size - session_len))
             #     inputs.append(eids)
-            #     outputs.append(0)
-            anomalys.extend([data["anomaly"]] * self.compute_num_window(session_len))    
-        return TensorDataset(torch.tensor(inputs, dtype=torch.float), torch.tensor(outputs), torch.tensor(anomalys))
+            #     outputs.append(0)  
+
+            session_dict[session_id]["windows"] = windows
+            session_dict[session_id]["labels"] = labels
+        
+        return session_dict
 
     def fit(self, eid2template):
         self.eid2template = eid2template
