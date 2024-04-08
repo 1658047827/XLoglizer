@@ -80,6 +80,8 @@ if __name__ == "__main__":
     )
     # trainer.load_model(f"{file_dir}/checkpoints/20240408210438.pth")
     trainer.fit(dataloader_train, dataloader_valid, args["epochs"])
+    # trainer.save_model()
+    # trainer.load_model(f"{file_dir}/checkpoints/{record_id}.pth")
 
     # exit(0)
 
