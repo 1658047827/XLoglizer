@@ -9,3 +9,6 @@
 
 # data
 /data/HDFS_v1/preprocessed
+
+# explorer
+/explorer/**/__pycache__
