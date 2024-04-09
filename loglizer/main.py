@@ -15,7 +15,7 @@ file_dir = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == "__main__":
     record_id = datetime.now().strftime("%Y%m%d%H%M%S")
-    setup_logger(f"{file_dir}/logs/{record_id}.log")
+    setup_logger("loglizer", f"{file_dir}/logs/{record_id}.log")
     a = Args()
     a.dump_args(f"{record_id}.json")
     args = a.get_args()
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         args["input_size"],
         f"{file_dir}/checkpoints/{record_id}.pth",
     )
-    # trainer.load_model(f"{file_dir}/checkpoints/20240408210438.pth")
+    # trainer.load_model(f"{file_dir}/checkpoints/20240409235724.pth")
     trainer.fit(dataloader_train, dataloader_valid, args["epochs"])
     # trainer.save_model()
     trainer.load_model(f"{file_dir}/checkpoints/{record_id}.pth")

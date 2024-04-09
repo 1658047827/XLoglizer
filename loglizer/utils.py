@@ -5,8 +5,8 @@ import logging
 import numpy as np
 
 
-def setup_logger(file_path):
-    logger = logging.getLogger("loglizer")
+def setup_logger(name, file_path):
+    logger = logging.getLogger(name)
     logger.setLevel(logging.INFO)
 
     file_handler = logging.FileHandler(file_path)
