@@ -2,7 +2,7 @@ import os
 import argparse
 import json
 from feature import LabelType, FeatureType, WindowType
-from tools.detect import DetectGranularity
+from detect import DetectGranularity
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 

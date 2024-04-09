@@ -4,9 +4,9 @@ import torch
 from datetime import datetime
 from torch.utils.data import DataLoader
 from feature import FeatureExtractor
-from tools.train import Trainer
-from tools.detect import Detector
-from tools.utils import setup_logger, seed_everything
+from train import Trainer
+from detect import Detector
+from utils import setup_logger, seed_everything
 from models import DeepLog
 from dataset import LogDataset, log_collate
 from args import Args
