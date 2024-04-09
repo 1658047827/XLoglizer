@@ -14,7 +14,7 @@ class Args:
 
         # model args
         self.parser.add_argument("--input_size", default=1, type=int)
-        self.parser.add_argument("--hidden_size", default=128, type=int)
+        self.parser.add_argument("--hidden_size", default=64, type=int)
         self.parser.add_argument("--num_layers", default=2, type=int)
 
         # dataset args
