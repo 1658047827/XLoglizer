@@ -19,23 +19,23 @@ if __name__ == "__main__":
     a = Args()
     a.dump_args(f"{record_id}.json")
     args = a.get_args()
-    seed_everything(args["seed"])
+    seed_everything(args.seed)
 
-    with open(f"{file_dir}/data/{args['data_dir']}/eid2template.pkl", "rb") as fr:
+    with open(f"{file_dir}/data/{args.data_dir}/eid2template.pkl", "rb") as fr:
         eid2template = pickle.load(fr)
 
     extractor = FeatureExtractor(
-        args["label_type"],
-        args["feature_type"],
-        args["window_type"],
-        args["window_size"],
-        args["stride"],
+        args.label_type,
+        args.feature_type,
+        args.window_type,
+        args.window_size,
+        args.stride,
     )
     extractor.fit(eid2template)
 
-    with open(f"{file_dir}/data/{args['data_dir']}/session_train.pkl", "rb") as fr:
+    with open(f"{file_dir}/data/{args.data_dir}/session_train.pkl", "rb") as fr:
         session_train = pickle.load(fr)
-    with open(f"{file_dir}/data/{args['data_dir']}/session_valid.pkl", "rb") as fr:
+    with open(f"{file_dir}/data/{args.data_dir}/session_valid.pkl", "rb") as fr:
         session_valid = pickle.load(fr)
 
     session_train = extractor.transform(session_train)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     dataloader_train = DataLoader(
         dataset_train,
-        args["batch_size"],
+        args.batch_size,
         shuffle=True,
         collate_fn=log_collate,
         pin_memory=True,
@@ -61,12 +61,12 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     deeplog = DeepLog(
-        args["input_size"],
-        args["hidden_size"],
-        args["num_layers"],
+        args.input_size,
+        args.hidden_size,
+        args.num_layers,
         extractor.meta_data["num_labels"],
     ).to(device)
-    optimizer = torch.optim.Adam(deeplog.parameters(), args["learning_rate"])
+    optimizer = torch.optim.Adam(deeplog.parameters(), args.learning_rate)
     criterion = torch.nn.CrossEntropyLoss()
 
     trainer = Trainer(
@@ -74,18 +74,18 @@ if __name__ == "__main__":
         device,
         optimizer,
         criterion,
-        args["window_size"],
-        args["input_size"],
+        args.window_size,
+        args.input_size,
         f"{file_dir}/checkpoints/{record_id}.pth",
     )
     # trainer.load_model(f"{file_dir}/checkpoints/20240409235724.pth")
-    trainer.fit(dataloader_train, dataloader_valid, args["epochs"])
+    trainer.fit(dataloader_train, dataloader_valid, args.epochs)
     # trainer.save_model()
     trainer.load_model(f"{file_dir}/checkpoints/{record_id}.pth")
 
     # exit(0)
 
-    with open(f"{file_dir}/data/{args['data_dir']}/session_test.pkl", "rb") as fr:
+    with open(f"{file_dir}/data/{args.data_dir}/session_test.pkl", "rb") as fr:
         session_test = pickle.load(fr)
 
     session_test = extractor.transform(session_test)
@@ -103,9 +103,9 @@ if __name__ == "__main__":
     detector = Detector(
         deeplog,
         device,
-        args["window_size"],
-        args["input_size"],
-        args["topk"],
-        args["detect_granularity"],
+        args.window_size,
+        args.input_size,
+        args.topk,
+        args.detect_granularity,
     )
     detector.predict(dataloader_test)

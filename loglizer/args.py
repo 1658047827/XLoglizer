@@ -42,21 +42,23 @@ class Args:
 
     def get_args(self):
         if self.args is None:
-            self.args = vars(self.parser.parse_args())
+            self.args = self.parser.parse_args()
         return self.args
 
     def dump_args(self, file_name):
         if self.args is None:
-            self.args = vars(self.parser.parse_args())
+            self.args = self.parser.parse_args()
         
         with open(f"{file_dir}/configs/{file_name}", "w") as fw:
-            json.dump(self.args, fw, indent=4)
+            json.dump(vars(self.args), fw, indent=4)
 
     def load_args(self, file_name):
         with open(f"{file_dir}/configs/{file_name}", "r") as fr:
-            self.args = json.load(fr)
+            ns_dict = json.load(fr)
 
-        self.args["label_type"] = LabelType(self.args["label_type"])
-        self.args["feature_type"] = FeatureType(self.args["feature_type"])
-        self.args["window_type"] = WindowType(self.args["window_type"])
-        self.args["detect_granularity"] = DetectGranularity(self.args["detect_granularity"])
+        ns_dict["label_type"] = LabelType(ns_dict["label_type"])
+        ns_dict["feature_type"] = FeatureType(ns_dict["feature_type"])
+        ns_dict["window_type"] = WindowType(ns_dict["window_type"])
+        ns_dict["detect_granularity"] = DetectGranularity(ns_dict["detect_granularity"])
+
+        self.args = argparse.Namespace(**ns_dict)
