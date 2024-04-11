@@ -8,6 +8,10 @@ from sklearn.decomposition import PCA
 file_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+class StateAbstraction:
+    pass
+
+
 class DeepStellar:
     def __init__(
         self,
@@ -65,4 +69,7 @@ class DeepStellar:
             self.reduced_vecs = self.pca.transform(self.vectors)
             self.logger.info(f"Save reduced vectors to {file_dir}/cache/reduced_vectors.npy")
             np.save(f"{file_dir}/cache/reduced_vectors.npy", self.reduced_vecs)
+
+    def state_abstraction(self):
+        pass
         

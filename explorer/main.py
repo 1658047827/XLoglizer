@@ -87,7 +87,9 @@ if __name__ == "__main__":
         args.state_num,
     )
     deepstellar.profile()
-    load_pca_cache = os.path.exists(f"{file_dir}/cache/pca_model.joblib")
-    deepstellar.pca_fit(load_pca_cache)
-    load_reduced_vecs_cache = os.path.exists(f"{file_dir}/cache/reduced_vectors.npy")
-    deepstellar.pca_transform(load_reduced_vecs_cache)
+    cached = os.path.exists(f"{file_dir}/cache/pca_model.joblib")
+    deepstellar.pca_fit(cached)
+    cached = os.path.exists(f"{file_dir}/cache/reduced_vectors.npy")
+    deepstellar.pca_transform(cached)
+    cached = os.path.exists(f"{file_dir}/cache/gmm_model.joblib")
+    
