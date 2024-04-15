@@ -24,9 +24,9 @@ class DeepLog(nn.Module):
 
         Returns:
             out: tensor of shape (batch_size, window_size, hidden_size)
-            pred: tensor of shape (batch_size, num_labels)
+            pred: tensor of shape (batch_size, window_size, num_labels)
         """
         out, _ = self.lstm(input)
-        repr = self.fc(out[:, -1, :])
+        repr = self.fc(out)
         pred = F.softmax(repr, dim=-1)
         return out, pred
