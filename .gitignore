@@ -3,6 +3,7 @@
 
 # dashboard
 /dashboard/node_modules
+/dashboard/dist
 
 # loglizer
 /loglizer/**/__pycache__
