@@ -4,6 +4,7 @@ import pickle
 import argparse
 import json
 import torch
+import numpy as np
 from datetime import datetime
 from torch.utils.data import DataLoader
 
@@ -17,7 +18,8 @@ from loglizer.feature import *
 from loglizer.detect import DetectGranularity
 from loglizer.dataset import *
 
-from deepstellar import DeepStellar
+from approach import DeepStellar
+from abstract import KMeansAbstractor
 
 
 parser = argparse.ArgumentParser()
@@ -30,12 +32,10 @@ args = parser.parse_args()
 def load_config(file_path):
     with open(file_path, "r") as fr:
         config_dict = json.load(fr)
-
     config_dict["label_type"] = LabelType(config_dict["label_type"])
     config_dict["feature_type"] = FeatureType(config_dict["feature_type"])
     config_dict["window_type"] = WindowType(config_dict["window_type"])
     config_dict["detect_granularity"] = DetectGranularity(config_dict["detect_granularity"])
-
     return argparse.Namespace(**config_dict)
 
 
@@ -80,16 +80,26 @@ if __name__ == "__main__":
     deepstellar = DeepStellar(
         model,
         device,
-        dataloader_train,
         config.window_size,
         config.input_size,
+        config.hidden_size,
+        extractor.meta_data["num_labels"],
         args.pca_components,
         args.state_num,
     )
-    deepstellar.profile()
-    cached = os.path.exists(f"{file_dir}/cache/pca_model.joblib")
-    deepstellar.pca_fit(cached)
-    cached = os.path.exists(f"{file_dir}/cache/reduced_vectors.npy")
-    deepstellar.pca_transform(cached)
-    cached = os.path.exists(f"{file_dir}/cache/gmm_model.joblib")
+    # deepstellar.profile(dataloader_train)
+    # vectors = np.load(f"{file_dir}/cache/vectors.npy")
+    # abstractor = KMeansAbstractor(args.state_num)
+    # traces = deepstellar.state_abstraction(abstractor, vectors)
+    # inputs = np.load(f"{file_dir}/cache/inputs.npy")
+    # state_input = deepstellar.gather_state_input_statistics(traces, inputs)
+    # preds = np.load(f"{file_dir}/cache/preds.npy")
+    # state_label = deepstellar.gather_state_label_statistics(traces, preds)
+    # transitions = deepstellar.get_transitions(traces)
+    
+    transitions = np.load(f"{file_dir}/cache/transitions.npy")
+    state_label = np.load(f"{file_dir}/cache/state_label.npy")
+    deepstellar.draw(transitions, state_label)
+
+
     
