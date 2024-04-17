@@ -4,12 +4,12 @@
 </template>
 
 <script setup>
-import data from "../assets/force.json"
+import data from "../assets/force0.json"
 import * as d3 from "d3";
 import { onMounted } from "vue";
 
-const width = 960
-const height = 600
+const width = 1080
+const height = 720
 
 onMounted(() => {
     const svg = d3.select("#diagram-container")
@@ -20,22 +20,25 @@ onMounted(() => {
 
     const simulation = d3.forceSimulation()
         .force("link", d3.forceLink().id(d => d.id))
-        .force("charge", d3.forceManyBody())
+        .force("charge", d3.forceManyBody().strength(-400))
         .force("center", d3.forceCenter(width / 2, height / 2));
-
 
     const link = svg.append("g")
         .attr("class", "links")
         .selectAll("line")
         .data(data.links)
-        .enter().append("line");
+        .enter()
+        .append("line")
+        .attr("fill", "none")
+        .attr("stroke-width", d => d.width) // edge width
+        .attr("stroke", "gray")
 
     const node = svg.append("g")
         .attr("class", "nodes")
         .selectAll("circle")
         .data(data.nodes)
         .enter().append("circle")
-        .attr("r", 5)
+        .attr("r", d => d.size)
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
@@ -85,12 +88,6 @@ onMounted(() => {
     cursor: pointer;
     fill: #ff3399;
     stroke: #000;
-    stroke-width: .5px;
-}
-
-.links line {
-    fill: none;
-    stroke: #9ecae1;
     stroke-width: .5px;
 }
 </style>
