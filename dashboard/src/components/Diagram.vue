@@ -4,23 +4,70 @@
 </template>
 
 <script setup>
-import data from "../assets/force0.json"
+// import data from "../assets/force.json"
+import axios from "axios";
 import * as d3 from "d3";
 import { onMounted } from "vue";
 
 const width = 1080
 const height = 720
 
-onMounted(() => {
-    const simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id(d => d.id))
+const colorScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range(['lightblue', 'darkblue']);
+
+function loopArc(d) {
+    const r = d.target.size;
+    return `M ${d.target.x - r} ${d.target.y}
+            A ${r} ${r} 1 1 1 ${d.target.x} ${d.target.y - r}`;
+}
+
+function linkArc(d) {
+    const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
+    const offsetX = ((d.target.x - d.source.x) * d.target.size) / r;
+    const offsetY = ((d.target.y - d.source.y) * d.target.size) / r;
+    return `M ${d.source.x} ${d.source.y}
+            A ${r} ${r} 0 0 1 ${d.target.x - offsetX} ${d.target.y - offsetY}`;
+}
+
+function drag(simulation) {
+
+    function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+    }
+
+    return d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended);
+}
+
+onMounted(async () => {
+    const response = await axios.get("/src/assets/force.json");
+    const graph = response.data;
+    const selfLoops = graph.links.filter((el) => el.source === el.target)
+    const edgeLinks = graph.links.filter((el) => el.source !== el.target)
+
+    const simulation = d3.forceSimulation(graph.nodes)
+        .force("link", d3.forceLink(graph.links).id(d => d.id))
         .force("charge", d3.forceManyBody().strength(-400))
         .force("center", d3.forceCenter(width / 2, height / 2))
         .force("x", d3.forceX())
         .force("y", d3.forceY())
-        .on("tick", ticked);
 
-    // Create the SVG container.
     const svg = d3.select("#diagram-container")
         .append("svg")
         .attr("width", width)
@@ -28,75 +75,72 @@ onMounted(() => {
         .attr("viewBox", [0, 0, width, height])
         .attr("style", "max-width: 100%; height: auto; font: 12px sans-serif;");
 
-    // Add a line for each link, and a circle for each node.
+    svg.append("defs").selectAll("marker")
+        .data(graph.links)
+        .join("marker")
+        .attr("id", d => `end-arrow-${d.source.id}-${d.target.id}`)
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 10)
+        .attr("markerWidth", 8.5)
+        .attr("markerHeight", 8.5)
+        .attr("orient", "auto")
+        .attr("markerUnits", "userSpaceOnUse")
+        .append("path")
+        .attr("fill", d => colorScale(d.weight))
+        .attr("d", "M0,-5L10,0L0,5");
+
+    const loop = svg.append("g")
+        .attr("fill", "none")
+        .selectAll("path")
+        .data(selfLoops)
+        .join("path")
+        .attr("stroke", d => colorScale(d.weight))
+        .attr("stroke-width", d => d.weight * 3)
+        .attr("marker-end", d => `url(#end-arrow-${d.source.id}-${d.target.id})`)
+
     const link = svg.append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
-        .selectAll("line")
-        .data(data.links)
-        .join("line")
-        .attr("stroke-width", d => d.width * 3);
+        .attr("fill", "none")
+        .selectAll("path")
+        .data(edgeLinks)
+        .join("path")
+        .attr("stroke", d => colorScale(d.weight))
+        .attr("stroke-width", d => d.weight * 3.5)
+        .attr("marker-end", d => `url(#end-arrow-${d.source.id}-${d.target.id})`)
 
     const node = svg.append("g")
-        .attr("stroke", "#fff")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-linejoin", "round")
+        .selectAll("g")
+        .data(graph.nodes)
+        .join("g")
+        .call(drag(simulation));
+
+    node.append("circle")
+        .attr("cursor", "pointer")
+        .attr("stroke", "white")
         .attr("stroke-width", 1.5)
-        .selectAll("circle")
-        .data(data.nodes)
-        .join("circle")
         .attr("r", d => d.size)
         .attr("fill", "#ff3399");
 
     node.append("title")
-        .text(d => d.id);
+        .text(d => `S${d.id}`);
 
-    // Add a drag behavior.
-    node.call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
+    node.append("text")
+        .attr("x", d => d.size)
+        .attr("y", "0.31em")
+        .text(d => `S${d.id}`)
+        .clone(true).lower()
+        .attr("fill", "none")
+        .attr("stroke", "white")
+        .attr("stroke-width", 3);
 
-    // Set the position attributes of links and nodes each time the simulation ticks.
-    function ticked() {
-        link
-            .attr("x1", d => d.source.x)
-            .attr("y1", d => d.source.y)
-            .attr("x2", d => d.target.x)
-            .attr("y2", d => d.target.y);
-
-        node
-            .attr("cx", d => d.x)
-            .attr("cy", d => d.y);
-    }
-
-    // Reheat the simulation when drag starts, and fix the subject position.
-    function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        event.subject.fx = event.subject.x;
-        event.subject.fy = event.subject.y;
-    }
-
-    // Update the subject (dragged node) position during drag.
-    function dragged(event) {
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
-    }
-
-    // Restore the target alpha so the simulation cools after dragging ends.
-    // Unfix the subject position now that it’s no longer being dragged.
-    function dragended(event) {
-        if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
-    }
+    simulation.on("tick", () => {
+        node.attr("transform", d => `translate(${d.x},${d.y})`);
+        loop.attr("d", loopArc)
+        link.attr("d", linkArc);
+    });
 })
 
 </script>
 
-<style>
-.nodes circle {
-    cursor: pointer;
-    fill: #ff3399;
-    stroke: #000;
-    stroke-width: 1px;
-}
-</style>
+<style scoped></style>
