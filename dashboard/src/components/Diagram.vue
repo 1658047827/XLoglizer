@@ -4,7 +4,6 @@
 </template>
 
 <script setup>
-// import data from "../assets/force.json"
 import axios from "axios";
 import * as d3 from "d3";
 import { onMounted } from "vue";
@@ -56,7 +55,7 @@ function drag(simulation) {
 }
 
 onMounted(async () => {
-    const response = await axios.get("/src/assets/force.json");
+    const response = await axios.get("/src/assets/force_kmeans_64_39.json");
     const graph = response.data;
     const selfLoops = graph.links.filter((el) => el.source === el.target)
     const edgeLinks = graph.links.filter((el) => el.source !== el.target)

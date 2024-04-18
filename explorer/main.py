@@ -19,11 +19,11 @@ from loglizer.detect import DetectGranularity
 from loglizer.dataset import *
 
 from approach import DeepStellar
-from abstract import KMeansAbstractor
+from abstract import KMeansAbstractor, GMMAbstractor
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--pca_components", default=32, type=int)
+parser.add_argument("--reduced_dim", default=32, type=int)
 parser.add_argument("--state_num", default=39, type=int)
 parser.add_argument("--record_id", default="20240410000119", type=str)
 args = parser.parse_args()
@@ -84,22 +84,25 @@ if __name__ == "__main__":
         config.input_size,
         config.hidden_size,
         extractor.meta_data["num_labels"],
-        args.pca_components,
+        args.reduced_dim,
         args.state_num,
     )
     # deepstellar.profile(dataloader_train)
-    # vectors = np.load(f"{file_dir}/cache/vectors.npy")
+    vectors = np.load(f"{file_dir}/cache/vectors.npy")
     # abstractor = KMeansAbstractor(args.state_num)
-    # traces = deepstellar.state_abstraction(abstractor, vectors)
-    # inputs = np.load(f"{file_dir}/cache/inputs.npy")
-    # state_input = deepstellar.gather_state_input_statistics(traces, inputs)
-    # preds = np.load(f"{file_dir}/cache/preds.npy")
-    # state_label = deepstellar.gather_state_label_statistics(traces, preds)
-    # transitions = deepstellar.get_transitions(traces)
-    
+    abstractor = GMMAbstractor(args.state_num)
+    traces = deepstellar.state_abstraction(abstractor, vectors)
+    inputs = np.load(f"{file_dir}/cache/inputs.npy")
+    state_input = deepstellar.gather_state_input_statistics(traces, inputs)
+    preds = np.load(f"{file_dir}/cache/preds.npy")
+    state_label = deepstellar.gather_state_label_statistics(traces, preds)
+    transitions = deepstellar.get_transitions(traces)
     transitions = np.load(f"{file_dir}/cache/transitions.npy")
     state_label = np.load(f"{file_dir}/cache/state_label.npy")
-    deepstellar.draw(transitions, state_label)
+    ########################################
+    # threshold: principles of statistics? #
+    ########################################
+    deepstellar.get_graph(transitions, state_label, 0.01)
 
 
     
