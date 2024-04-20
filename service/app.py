@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import torch
+import joblib
 import pickle
 import argparse
 from flask import Flask, request
@@ -15,7 +16,7 @@ from loglizer.models import DeepLog
 from loglizer.feature import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--explorer", default="20240410000119", type=str)
+parser.add_argument("--explorer", default="20240421024529", type=str)
 parser.add_argument("--loglizer", default="20240410000119", type=str)
 args = parser.parse_args()
 
@@ -56,7 +57,7 @@ class Predictor:
         self.loglizer.eval()
 
     def load_explorer(self):
-        pass
+        self.explorer = joblib.load(f"{base_dir}/explorer/save/{args.explorer}.joblib")
 
     def predict(self, input):
         x = (
@@ -72,7 +73,9 @@ class Predictor:
             {"name": f"E{idx}", "value": value.item()}
             for idx, value in zip(topk_indices, topk_values)
         ]
-        topk_pred.append({"name": "Others", "value": 1.0 - torch.sum(topk_values).item()})
+        topk_pred.append(
+            {"name": "Others", "value": 1.0 - torch.sum(topk_values).item()}
+        )
         return topk_pred
 
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     predictor.load_loglizer()
     predictor.load_explorer()
 
-    app = Flask("XLoglizer")
+    app = Flask("XLoglizer", static_folder=f"{file_dir}/static")
     CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
     @app.route("/predict", methods=["POST"])
@@ -90,5 +93,9 @@ if __name__ == "__main__":
         print(input)
         last_topk_pred = predictor.predict(input)
         return {"topk_pred": last_topk_pred}
+
+    @app.route("/static/<path:filename>")
+    def static_file(filename):
+        return app.send_static_file(filename)
 
     app.run()
