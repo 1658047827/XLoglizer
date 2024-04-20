@@ -3,6 +3,11 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
+from sklearn.metrics import (
+    silhouette_score,
+    calinski_harabasz_score,
+    davies_bouldin_score,
+)
 
 
 class DimensionReducer:
@@ -39,12 +44,24 @@ class GMMAbstractor(StateAbstractor):
 
     def fit(self, samples):
         self.logger.info("Fit GMM clustering")
-        num_extract = len(samples) // 10
+
+        num_extract = len(samples) // 5
         random_indices = np.random.choice(len(samples), num_extract, replace=False)
         random_samples = samples[random_indices]
         self.gmm.fit(random_samples)
-        bic = self.gmm.bic(random_samples)
-        self.logger.info(f"GMM Bayesian information criterion: {bic}")
+
+        # labels = self.gmm.fit_predict(samples)
+        # bic = self.gmm.bic(samples)
+        # self.logger.info(f"GMM Bayesian information criterion: {bic}")
+
+        # silhouette = silhouette_score(samples, labels)
+        # self.logger.info(f"Silhouette Score: {silhouette} (the larger the better)")
+
+        # ch_score = calinski_harabasz_score(samples, labels)
+        # self.logger.info(f"Calinski-Harabasz Score: {ch_score} (the larger the better)")
+
+        # db_score = davies_bouldin_score(samples, labels)
+        # self.logger.info(f"Davies-Bouldin Score: {db_score} (the smaller the better)")
 
     def predict(self, samples):
         self.logger.info("Predict cluster index for each sample")
@@ -60,7 +77,18 @@ class KMeansAbstractor(StateAbstractor):
 
     def fit(self, samples):
         self.logger.info("Fit KMeans clustering")
+
         self.kmeans.fit(samples)
+        # labels = self.kmeans.labels_
+
+        # silhouette = silhouette_score(samples, labels)
+        # self.logger.info(f"Silhouette Score: {silhouette} (the larger the better)")
+
+        # ch_score = calinski_harabasz_score(samples, labels)
+        # self.logger.info(f"Calinski-Harabasz Score: {ch_score} (the larger the better)")
+
+        # db_score = davies_bouldin_score(samples, labels)
+        # self.logger.info(f"Davies-Bouldin Score: {db_score} (the smaller the better)")
 
     def predict(self, samples):
         self.logger.info("Predict cluster index for each sample")
