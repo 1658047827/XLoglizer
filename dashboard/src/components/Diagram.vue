@@ -1,5 +1,8 @@
 <template>
-    <div id="diagram-container"></div>
+    <div id="diagram-container">
+        <svg id="graph-svg" :width="width" :height="height" :viewBox="[0, 0, width, height]"
+            style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
+    </div>
     <div id="node-info">
         <el-card shadow="hover" style="width: 400px; margin-top: 100px;">
             <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
@@ -93,15 +96,15 @@ function clicked(event, d) {
 }
 
 onMounted(async () => {
-    const resp0 = await axios.get("/src/assets/force.json");
+    const resp0 = await axios.get("http://localhost:5000/static/force.json");
     const graph = resp0.data;
     const selfLoops = graph.links.filter((el) => el.source === el.target)
     const edgeLinks = graph.links.filter((el) => el.source !== el.target)
 
-    const resp1 = await axios.get("/src/assets/state_input.json");
+    const resp1 = await axios.get("http://localhost:5000/static/state_input.json");
     state_input.value = resp1.data;
 
-    const resp2 = await axios.get("/src/assets/state_label.json");
+    const resp2 = await axios.get("http://localhost:5000/static/state_label.json");
     state_label.value = resp2.data;
 
     const simulation = d3.forceSimulation(graph.nodes)
@@ -111,12 +114,7 @@ onMounted(async () => {
         .force("x", d3.forceX())
         .force("y", d3.forceY())
 
-    const svg = d3.select("#diagram-container")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [0, 0, width, height])
-        .attr("style", "max-width: 100%; height: auto; font: 12px sans-serif;");
+    const svg = d3.select("#graph-svg")
 
     svg.append("defs").selectAll("marker")
         .data(graph.links)
