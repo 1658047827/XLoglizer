@@ -1,19 +1,53 @@
 <template>
     <div id="diagram-container"></div>
-    <div id="node-info"></div>
+    <div id="node-info">
+        <el-card shadow="hover" style="width: 400px; margin-top: 100px;">
+            <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
+            <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
+            <el-scrollbar max-height="200px">
+                <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
+                    <span style="font-size: large;">E{{ key }}</span>
+                    <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                        count: {{ value }}
+                    </el-tag>
+                </div>
+            </el-scrollbar>
+            <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
+            <el-scrollbar max-height="200px">
+                <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
+                    <span style="font-size: large;">E{{ key }}</span>
+                    <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                        count: {{ value }}
+                    </el-tag>
+                </div>
+            </el-scrollbar>
+        </el-card>
+    </div>
 </template>
 
 <script setup>
 import axios from "axios";
 import * as d3 from "d3";
-import { onMounted } from "vue";
+import { onMounted, defineProps, ref } from "vue";
 
-const width = 1080
-const height = 720
+const state = ref(1)
+const state_input = ref([])
+const state_label = ref([])
+
+const { width, height } = defineProps({
+    width: {
+        type: Number,
+        default: 1080,
+    },
+    height: {
+        type: Number,
+        default: 720,
+    }
+})
 
 const colorScale = d3.scaleLinear()
     .domain([0, 1])
-    .range(['lightblue', 'darkblue']);
+    .range(["#66b1ff", "#213d5b"]);
 
 function loopArc(d) {
     const r = d.target.size;
@@ -32,7 +66,7 @@ function linkArc(d) {
 function drag(simulation) {
 
     function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) simulation.alphaTarget(0.05).restart();
         d.fx = d.x;
         d.fy = d.y;
     }
@@ -54,11 +88,21 @@ function drag(simulation) {
         .on("end", dragended);
 }
 
+function clicked(event, d) {
+    state.value = d.id;
+}
+
 onMounted(async () => {
-    const response = await axios.get("/src/assets/force_kmeans_64_39.json");
-    const graph = response.data;
+    const resp0 = await axios.get("/src/assets/force.json");
+    const graph = resp0.data;
     const selfLoops = graph.links.filter((el) => el.source === el.target)
     const edgeLinks = graph.links.filter((el) => el.source !== el.target)
+
+    const resp1 = await axios.get("/src/assets/state_input.json");
+    state_input.value = resp1.data;
+
+    const resp2 = await axios.get("/src/assets/state_label.json");
+    state_label.value = resp2.data;
 
     const simulation = d3.forceSimulation(graph.nodes)
         .force("link", d3.forceLink(graph.links).id(d => d.id))
@@ -119,7 +163,8 @@ onMounted(async () => {
         .attr("stroke", "white")
         .attr("stroke-width", 1.5)
         .attr("r", d => d.size)
-        .attr("fill", "#ff3399");
+        .attr("fill", "#ff3399")
+        .on("click", clicked);
 
     node.append("title")
         .text(d => `S${d.id}`);
@@ -142,4 +187,10 @@ onMounted(async () => {
 
 </script>
 
-<style scoped></style>
+<style scoped>
+.state-x-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
