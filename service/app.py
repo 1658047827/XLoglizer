@@ -5,12 +5,14 @@ import torch
 import joblib
 import pickle
 import argparse
+import pandas as pd
 from flask import Flask, request
 from flask_cors import CORS
 
 file_dir = os.path.dirname(os.path.abspath(__file__))
 base_dir = os.path.dirname(file_dir)
 sys.path.append(base_dir)
+sys.path.append(f"{base_dir}/explorer")
 
 from loglizer.models import DeepLog
 from loglizer.feature import *
@@ -66,7 +68,7 @@ class Predictor:
             .to(self.device)
         )
         out, pred = self.loglizer.profile(x)
-        print(out.shape, pred.shape)
+        # print(out.shape, pred.shape)
         last = pred[:, -1, :].squeeze()
         topk_values, topk_indices = torch.topk(last, self.config.topk)
         topk_pred = [
@@ -76,13 +78,18 @@ class Predictor:
         topk_pred.append(
             {"name": "Others", "value": 1.0 - torch.sum(topk_values).item()}
         )
-        return topk_pred
+
+        sample = out.squeeze().cpu().numpy()
+        reduced_vec = self.explorer.reducer.transform(sample)
+        trace = self.explorer.abstractor.predict(reduced_vec)
+        return topk_pred, trace.tolist()
 
 
 if __name__ == "__main__":
     predictor = Predictor()
     predictor.load_loglizer()
     predictor.load_explorer()
+    df = pd.read_json(f"{file_dir}/data/train_dataset.json")
 
     app = Flask("XLoglizer", static_folder=f"{file_dir}/static")
     CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
@@ -90,9 +97,18 @@ if __name__ == "__main__":
     @app.route("/predict", methods=["POST"])
     def predict():
         input = request.json.get("data")
-        print(input)
-        last_topk_pred = predictor.predict(input)
-        return {"topk_pred": last_topk_pred}
+        last_topk_pred, trace = predictor.predict(input)
+        return {"topk_pred": last_topk_pred, "trace": trace}
+
+    @app.route("/dataset", methods=["GET"])
+    def dataset():
+        page = int(request.args.get("page"))
+        size = int(request.args.get("size"))
+        total = df.shape[0]
+        end = page * size if page * size <= total else total
+        selected = df.iloc[(page - 1) * size : end]
+        data = selected.to_dict(orient="records")
+        return {"data": data, "total": total}
 
     @app.route("/static/<path:filename>")
     def static_file(filename):
