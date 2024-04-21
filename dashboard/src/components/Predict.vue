@@ -1,7 +1,8 @@
 <template>
     <div>
-        <el-button type="danger" plain @click="clear" style="margin-top: 50px;">Clear</el-button>
-        <el-card shadow="hover" style="width: 500px; margin-top: 10px;">
+        <div style="font-size: x-large; margin-bottom: 10px; color: #409EFF;">Online Prediction</div>
+        <!-- <el-button type="danger" plain @click="clear">Clear</el-button> -->
+        <el-card style="width: 500px; margin-top: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <el-tag v-for="eid in eids" :key="eid" closable :disable-transitions="false"
@@ -19,15 +20,20 @@
                 <el-button :icon="Search" circle @click="predict" />
             </div>
         </el-card>
-        <el-table :data="templates" border height="250" style="width: 100%; margin-top: 20px;">
+        <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            <el-table :data="templates" border height="250" style="width: 100%; margin-top: 20px;">
             <el-table-column prop="EventId" label="EventId" width="100" />
             <el-table-column prop="EventTemplate" label="EventTemplate" width="400" />
         </el-table>
-        <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div>
-        <div id="chart-container">
-            <div style="width: 100%; height: 400px" ref="chartRef"></div>
         </div>
         <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div>
+        <div id="chart-container">
+            <div style="width: 100%; height: 300px" ref="chartRef"></div>
+        </div>
+        <div style="font-size: medium; margin-bottom: 10px;">Abstract Trace</div>
+        <div style="font-size: large; display: flex; justify-content: center;">
+            {{ showTrace(trace) }}
+        </div>
     </div>
 </template>
 
@@ -39,7 +45,7 @@ import { nextTick, onMounted, ref } from "vue";
 import * as echarts from 'echarts';
 
 const templates = ref([])
-
+const trace = ref([0])
 const inputValue = ref("")
 const eids = ref([22, 5, 5, 5, 26, 26, 26, 11, 9, 11])
 const inputVisible = ref(false)
@@ -71,10 +77,22 @@ const clear = () => {
 const predict = async () => {
     const data = { data: eids.value }
     const resp = await axios.post("http://localhost:5000/predict", data)
-    console.log(resp.data.topk_pred)
     pieData = resp.data.topk_pred
     option.series[0].data = pieData
     chart.setOption(option);
+
+    trace.value = resp.data.trace;
+    trace.value.unshift(0);
+}
+
+const showTrace = (trace) => {
+    let formattedString = "";
+    for (let i = 0; i < trace.length - 1; i++) {
+        formattedString += `S${trace[i]}`;
+        formattedString += '→';
+    }
+    formattedString += `S${trace[trace.length - 1]}`;
+    return formattedString;
 }
 
 let chart;
@@ -83,7 +101,7 @@ const chartRef = ref(null);
 let pieData = [];
 
 onMounted(async () => {
-    const resp = await axios.get("/src/assets/templates.json");
+    const resp = await axios.get("http://localhost:5000/static/templates.json");
     templates.value = resp.data
 
     chart = echarts.init(chartRef.value);

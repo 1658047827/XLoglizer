@@ -11,9 +11,9 @@ import Data from './components/Data.vue';
             <el-header style="padding: 0;">
                 <Header></Header>
             </el-header>
-            <el-main style="padding: 0; display: flex;">
+            <el-main style="display: flex;">
                 <Predict></Predict>
-                <Diagram :width="960" :height="720"></Diagram>
+                <Diagram :width="800" :height="800"></Diagram>
             </el-main>
             <el-footer height="300">
                 <Data></Data>
