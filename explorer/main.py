@@ -96,10 +96,16 @@ if __name__ == "__main__":
         args.reduced_dim,
         args.state_num,
     )
-    # deepstellar.profile(dataloader_train)
+    df = deepstellar.profile(dataloader_train, config.topk)
     vectors = np.load(f"{file_dir}/cache/vectors.npy")
     reduced_vectors = deepstellar.dimension_reduction(vectors)
     traces = deepstellar.state_abstraction(reduced_vectors)
+
+    df["trace"] = traces.tolist()
+    df["index"] = df.index
+    df.reset_index(drop=True, inplace=True)
+    df.to_json(f"{file_dir}/cache/train_dataset.json")
+
     inputs = np.load(f"{file_dir}/cache/inputs.npy")
     state_input = deepstellar.gather_state_input_statistics(traces, inputs)
     preds = np.load(f"{file_dir}/cache/preds.npy")
@@ -108,9 +114,9 @@ if __name__ == "__main__":
     transitions = deepstellar.get_transitions(traces)
     transitions = np.load(f"{file_dir}/cache/transitions.npy")
     state_label = np.load(f"{file_dir}/cache/state_label.npy")
-    ########################################
-    # threshold: principles of statistics? #
-    ########################################
+    # ########################################
+    # # threshold: principles of statistics? #
+    # ########################################
     deepstellar.get_graph(transitions, state_input, 0.01)
-    
+
     joblib.dump(deepstellar, f"{file_dir}/save/{record_id}.joblib")

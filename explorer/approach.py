@@ -2,6 +2,7 @@ import os
 import torch
 import logging
 import json
+import pandas as pd
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -38,7 +39,7 @@ class DeepStellar:
         # self.abstractor = GMMAbstractor(state_num)
 
     @torch.no_grad()
-    def profile(self, train_loader):
+    def profile(self, train_loader, topk):
         self.logger.info("Collect hidden vectors from RNN and train dataset")
         collect = defaultdict(list)
         for batch in train_loader:
@@ -48,6 +49,7 @@ class DeepStellar:
                 .to(self.device)
             )
             out, pred = self.model.profile(x)
+            collect["session_id"].extend(batch["session_id"])
             collect["vectors"].append(out)
             collect["predictions"].append(pred)
             collect["inputs"].append(x)
@@ -59,16 +61,29 @@ class DeepStellar:
         inputs = torch.cat(collect["inputs"]).squeeze().cpu().numpy().astype(int)
         labels = torch.cat(collect["labels"]).cpu().numpy()
 
+        topk_values, topk_indices = torch.topk(predictions[:, -1, :].squeeze(), topk)
+        df = pd.DataFrame({
+            "session_id": collect["session_id"],
+            "input": inputs.tolist(),
+            "label": labels.tolist(),
+            "topk_pred": topk_indices.cpu().numpy().tolist(),
+            "topk_value": topk_values.cpu().numpy().tolist(),
+        })
+        print(df)
+
         np.save(f"{file_dir}/cache/vectors.npy", vectors)
         np.save(f"{file_dir}/cache/preds.npy", preds)
         np.save(f"{file_dir}/cache/inputs.npy", inputs)
         np.save(f"{file_dir}/cache/labels.npy", labels)
 
+        return df
+
     def dimension_reduction(self, vectors):
         samples = vectors.reshape(-1, vectors.shape[-1])
-
+        #####################################
+        # should I just use unique samples? #
+        #####################################
         unique_samples = np.unique(samples, axis=0)
-
         self.reducer.fit(unique_samples)
         reduced = self.reducer.transform(samples)
         reduced_vectors = reduced.reshape(-1, self.window_size, self.reduced_dim)
@@ -125,7 +140,7 @@ class DeepStellar:
         pred = state_pred[traces[:, -1].squeeze()]
         rnn_pred = preds[:, -1].squeeze()
         count = np.sum(pred == rnn_pred)
-        fdlt =  count / len(traces)
+        fdlt = count / len(traces)
         self.logger.info(f"Fidelity of abstraction model: {fdlt}")
         return fdlt
 
