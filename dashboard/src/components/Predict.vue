@@ -22,9 +22,9 @@
         </el-card>
         <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
             <el-table :data="templates" border height="250" style="width: 100%; margin-top: 20px;">
-            <el-table-column prop="EventId" label="EventId" width="100" />
-            <el-table-column prop="EventTemplate" label="EventTemplate" width="400" />
-        </el-table>
+                <el-table-column prop="EventId" label="EventId" width="100" />
+                <el-table-column prop="EventTemplate" label="EventTemplate" width="400" />
+            </el-table>
         </div>
         <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div>
         <div id="chart-container">
@@ -75,14 +75,18 @@ const clear = () => {
 }
 
 const predict = async () => {
-    const data = { data: eids.value }
-    const resp = await axios.post("http://localhost:5000/predict", data)
-    pieData = resp.data.topk_pred
-    option.series[0].data = pieData
-    chart.setOption(option);
+    if (eids.value.length < 10 || eids.value.length > 10) {
+        ElMessage.error("Please enter a sequence of length 10.")
+    } else {
+        const data = { data: eids.value }
+        const resp = await axios.post("http://localhost:5000/predict", data)
+        pieData = resp.data.topk_pred
+        option.series[0].data = pieData
+        chart.setOption(option);
 
-    trace.value = resp.data.trace;
-    trace.value.unshift(0);
+        trace.value = resp.data.trace;
+        trace.value.unshift(0);
+    }
 }
 
 const showTrace = (trace) => {
