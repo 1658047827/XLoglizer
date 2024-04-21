@@ -1,39 +1,44 @@
 <template>
-    <div id="diagram-container">
-        <svg id="graph-svg" :width="width" :height="height" :viewBox="[0, 0, width, height]"
-            style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
-    </div>
-    <div id="node-info">
-        <el-card shadow="hover" style="width: 400px; margin-top: 100px;">
-            <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
-            <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
-            <el-scrollbar max-height="200px">
-                <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
-                    <span style="font-size: large;">E{{ key }}</span>
-                    <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
-                        count: {{ value }}
-                    </el-tag>
-                </div>
-            </el-scrollbar>
-            <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
-            <el-scrollbar max-height="200px">
-                <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
-                    <span style="font-size: large;">E{{ key }}</span>
-                    <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
-                        count: {{ value }}
-                    </el-tag>
-                </div>
-            </el-scrollbar>
-        </el-card>
+    <div style="margin-left: 20px; margin-right: 20px; display: flex;">
+        <div id="diagram-container">
+            <div style="font-size: x-large; color: #409EFF;">State Diagram</div>
+            <svg id="graph-svg" :width="width" :height="height" :viewBox="[0, 0, width, height]"
+                style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
+        </div>
+        <div id="node-info">
+            <el-card style="width: 350px; margin-top: 50px;">
+                <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
+                <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
+                <el-scrollbar max-height="150px">
+                    <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
+                        <span style="font-size: large;">E{{ key }}</span>
+                        <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                            count: {{ value }}
+                        </el-tag>
+                    </div>
+                </el-scrollbar>
+                <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="70" />
+                <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
+                <el-scrollbar max-height="200px">
+                    <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
+                        <span style="font-size: large;">E{{ key }}</span>
+                        <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                            count: {{ value }}
+                        </el-tag>
+                    </div>
+                </el-scrollbar>
+                <el-empty style="padding: 20px;" v-if="isEmpty(state_label[state])" :image-size="70" />
+            </el-card>
+        </div>
     </div>
 </template>
 
 <script setup>
 import axios from "axios";
 import * as d3 from "d3";
-import { onMounted, defineProps, ref } from "vue";
+import { onMounted, ref } from "vue";
 
-const state = ref(1)
+const state = ref(0)
 const state_input = ref([])
 const state_label = ref([])
 
@@ -47,6 +52,10 @@ const { width, height } = defineProps({
         default: 720,
     }
 })
+
+const isEmpty = (obj) => {
+    return obj === null || obj === undefined || Object.keys(obj).length === 0;
+}
 
 const colorScale = d3.scaleLinear()
     .domain([0, 1])
