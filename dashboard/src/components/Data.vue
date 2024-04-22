@@ -1,15 +1,15 @@
 <template>
     <div style="font-size: x-large; margin-bottom: 10px; color: #409EFF;">Train Dataset</div>
     <div class="table-container">
-        <el-table :data="tableData" style="width: 100%;" max-height="300px" height="300px">
-            <el-table-column prop="index" label="Index" width="130"></el-table-column>
+        <el-table :data="tableData" style="width: 100%;" max-height="300px" height="295px">
+            <el-table-column prop="index" label="Index" width="90"></el-table-column>
             <el-table-column prop="session_id" label="Session ID" width="250"></el-table-column>
             <el-table-column prop="input" label="Input" width="350">
                 <template #default="{ row }">
                     {{ showInput(row.input) }}
                 </template>
             </el-table-column>
-            <el-table-column prop="trace" label="Trace" width="450">
+            <el-table-column prop="trace" label="Trace" width="400">
                 <template #default="{ row }">
                     {{ showTrace(row.trace) }}
                 </template>
@@ -17,7 +17,8 @@
             <el-table-column label="RNN Loglizer Topk Prediction">
                 <template #default="{ row }">
                     <el-tag v-for="(val, index) in row.topk_value" :key="index" type="primary"
-                        style="margin-right: 25px;">E{{ row.topk_pred[index] }}: {{ formatter(val) }}</el-tag>
+                        style="margin-right: 25px;">
+                        <span style="font-weight: bold;">E{{ row.topk_pred[index] }}</span>: {{ formatter(val) }}</el-tag>
                 </template>
             </el-table-column>
             <el-table-column prop="label" label="Label" width="120">
@@ -144,7 +145,8 @@ onMounted(async () => {
 }
 
 .pagination {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    margin-top: 10px;
     display: flex;
     justify-content: flex-end;
 }

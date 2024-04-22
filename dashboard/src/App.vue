@@ -3,6 +3,7 @@ import Header from './components/Header.vue';
 import Predict from './components/Predict.vue';
 import Diagram from './components/Diagram.vue';
 import Data from './components/Data.vue';
+import Anomaly from './components/Anomaly.vue';
 </script>
 
 <template>
@@ -11,11 +12,12 @@ import Data from './components/Data.vue';
             <el-header style="padding: 0;">
                 <Header></Header>
             </el-header>
-            <el-main style="display: flex;">
+            <el-main style="display: flex; justify-content: space-around;">
                 <Predict></Predict>
                 <Diagram :width="800" :height="800"></Diagram>
+                <Anomaly></Anomaly>
             </el-main>
-            <el-footer height="300">
+            <el-footer height="300" style="padding-left: 45px; padding-right: 45px;">
                 <Data></Data>
             </el-footer>
         </el-container>

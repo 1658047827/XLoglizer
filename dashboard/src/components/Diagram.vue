@@ -1,7 +1,7 @@
 <template>
-    <div style="margin-left: 20px; margin-right: 20px; display: flex;">
+    <div style="margin-left: 20px; margin-right: 50px; display: flex;">
         <div id="diagram-container">
-            <div style="font-size: x-large; color: #409EFF;">State Diagram</div>
+            <div style="font-size: x-large; color: #409EFF; margin-left: 30px;">State Diagram</div>
             <svg id="graph-svg" :width="width" :height="height" :viewBox="[0, 0, width, height]"
                 style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
         </div>
@@ -19,7 +19,7 @@
                 </el-scrollbar>
                 <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="70" />
                 <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
-                <el-scrollbar max-height="200px">
+                <el-scrollbar max-height="150px">
                     <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
                         <span style="font-size: large;">E{{ key }}</span>
                         <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
@@ -118,8 +118,8 @@ onMounted(async () => {
 
     const simulation = d3.forceSimulation(graph.nodes)
         .force("link", d3.forceLink(graph.links).id(d => d.id))
-        .force("charge", d3.forceManyBody().strength(-400))
-        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("charge", d3.forceManyBody().strength(-500))
+        .force("center", d3.forceCenter(width / 2 + 60, height / 2 + 50))
         .force("x", d3.forceX())
         .force("y", d3.forceY())
 

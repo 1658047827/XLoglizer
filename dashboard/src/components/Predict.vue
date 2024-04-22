@@ -26,11 +26,11 @@
                 <el-table-column prop="EventTemplate" label="EventTemplate" width="400" />
             </el-table>
         </div>
-        <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div>
+        <!-- <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div> -->
         <div id="chart-container">
             <div style="width: 100%; height: 300px" ref="chartRef"></div>
         </div>
-        <div style="font-size: medium; margin-bottom: 10px;">Abstract Trace</div>
+        <div style="font-size: large; margin-bottom: 7px; font-weight: bold;">Abstract Trace</div>
         <div style="font-size: large; display: flex; justify-content: center;">
             {{ showTrace(trace) }}
         </div>
@@ -70,12 +70,12 @@ const handleInputConfirm = () => {
     inputValue.value = ""
 }
 
-const clear = () => {
-    eids.value = []
-}
+// const clear = () => {
+//     eids.value = []
+// }
 
 const predict = async () => {
-    if (eids.value.length < 10 || eids.value.length > 10) {
+    if (eids.value.length !== 10) {
         ElMessage.error("Please enter a sequence of length 10.")
     } else {
         const data = { data: eids.value }
@@ -110,6 +110,9 @@ onMounted(async () => {
 
     chart = echarts.init(chartRef.value);
     option = {
+        title: {
+            text: "RNN Loglizer Top K Prediction"
+        },
         series: [
             {
                 type: 'pie',
@@ -127,4 +130,8 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+#chart-container {
+    margin-top: 20px;
+}
+</style>
