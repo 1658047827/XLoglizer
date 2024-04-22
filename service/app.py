@@ -6,6 +6,7 @@ import joblib
 import pickle
 import argparse
 import pandas as pd
+import torch.nn.functional as F
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -84,6 +85,37 @@ class Predictor:
         trace = self.explorer.abstractor.predict(reduced_vec)
         return topk_pred, trace.tolist()
 
+    def sliding_window(self, eids):
+        i = 0
+        windows = []
+        labels = []
+        session_len = len(eids)
+        while i + self.config.window_size < session_len:
+            windows.append(eids[i : i + self.config.window_size])
+            labels.append(eids[i + self.config.window_size])
+            i += self.config.stride
+        if i == 0:
+            eids.extend([0] * (self.config.window_size - session_len))
+            windows.append(eids)
+            labels.append(0)
+        return {"windows": windows, "labels": labels}
+
+    def detect(self, session_dict):
+        x = torch.tensor(session_dict["windows"], dtype=torch.float).to(self.device)
+        y = torch.tensor(session_dict["labels"]).to(self.device)
+        pred = self.loglizer(
+            x.view(-1, self.config.window_size, self.config.input_size)
+        )
+        # Compute loss
+        probs = torch.gather(torch.softmax(pred, dim=1), 1, y.unsqueeze(1))
+        sample_losses = -torch.log(probs.squeeze())
+        losses = sample_losses.tolist()
+        # print("Sample losses:", losses)
+
+        topk_values, topk_indices = torch.topk(pred, self.config.topk)
+
+        return losses, topk_values.tolist(), topk_indices.tolist()
+
 
 if __name__ == "__main__":
     predictor = Predictor()
@@ -93,6 +125,17 @@ if __name__ == "__main__":
 
     app = Flask("XLoglizer", static_folder=f"{file_dir}/static")
     CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
+
+    @app.route("/detect", methods=["POST"])
+    def detect():
+        session = request.json.get("session")
+        session_dict = predictor.sliding_window(session)
+        losses, topk_values, topk_indices = predictor.detect(session_dict)
+        return {
+            "losses": losses,
+            "topk_preds": topk_indices,
+            "topk_values": topk_values,
+        }
 
     @app.route("/predict", methods=["POST"])
     def predict():
