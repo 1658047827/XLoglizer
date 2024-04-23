@@ -20,10 +20,10 @@
                 <el-button :icon="Search" circle @click="predict" />
             </div>
         </el-card>
-        <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <el-table :data="templates" border height="250" style="width: 100%; margin-top: 20px;">
+        <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 500px;">
+            <el-table :data="templates" border height="250" style="margin-top: 20px;">
                 <el-table-column prop="EventId" label="EventId" width="100" />
-                <el-table-column prop="EventTemplate" label="EventTemplate" width="400" />
+                <el-table-column prop="EventTemplate" label="EventTemplate" width="1000" />
             </el-table>
         </div>
         <!-- <div style="font-size: medium; margin-top: 10px;">RNN Loglizer Top K Prediction</div> -->
@@ -127,6 +127,8 @@ onMounted(async () => {
         ],
     };
     chart.setOption(option);
+
+    await predict();
 })
 </script>
 

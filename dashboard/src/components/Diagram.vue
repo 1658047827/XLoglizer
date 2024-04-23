@@ -6,10 +6,10 @@
                 style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
         </div>
         <div id="node-info">
-            <el-card style="width: 350px; margin-top: 50px;">
+            <el-card style="width: 300px; margin-top: 50px;">
                 <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
                 <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
-                <el-scrollbar max-height="150px">
+                <el-scrollbar max-height="120px">
                     <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
                         <span style="font-size: large;">E{{ key }}</span>
                         <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
@@ -17,9 +17,9 @@
                         </el-tag>
                     </div>
                 </el-scrollbar>
-                <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="70" />
+                <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="50" />
                 <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
-                <el-scrollbar max-height="150px">
+                <el-scrollbar max-height="120px">
                     <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
                         <span style="font-size: large;">E{{ key }}</span>
                         <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
@@ -27,7 +27,7 @@
                         </el-tag>
                     </div>
                 </el-scrollbar>
-                <el-empty style="padding: 20px;" v-if="isEmpty(state_label[state])" :image-size="70" />
+                <el-empty style="padding: 20px;" v-if="isEmpty(state_label[state])" :image-size="50" />
             </el-card>
         </div>
     </div>

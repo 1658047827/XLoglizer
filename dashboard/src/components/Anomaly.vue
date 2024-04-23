@@ -13,18 +13,18 @@
             <div style="width: 100%; height: 300px" ref="lineChartRef"></div>
         </div>
         <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <el-table :data="topk_preds" max-height="360px" height="360px">
-                <el-table-column label="Topk Prediction" width="330px">
+            <el-table border :data="topk_preds" max-height="360px" height="360px">
+                <el-table-column label="Topk Prediction" width="390px">
                     <template #default="{ row }">
                         {{ showPrediction(row.pred) }}
                     </template>
                 </el-table-column>
                 <el-table-column label="Label">
                     <template #default="{ row }">
-                        {{ row.label }}
+                        E{{ row.label }}
                     </template>
                 </el-table-column>
-                <el-table-column label="Loss" width="300px">
+                <el-table-column label="Loss" width="250px">
                     <template #default="{ row }">
                         {{ row.loss }}
                     </template>
@@ -43,11 +43,11 @@ import { onMounted, ref } from "vue";
 
 const showPrediction = (preds) => {
     let formattedString = "";
-    for (let i = 0; i < preds.length; ++i) {
+    for (let i = 0; i < preds.length - 1; ++i) {
         formattedString += `E${preds[i]}`;
-        formattedString += '>';
+        formattedString += ' > ';
     }
-    formattedString += `S${preds[preds.length - 1]}`;
+    formattedString += `E${preds[preds.length - 1]}`;
     return formattedString;
 }
 
