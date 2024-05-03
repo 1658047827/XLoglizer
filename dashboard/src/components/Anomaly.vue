@@ -12,18 +12,18 @@
             <div style="width: 100%; height: 300px" ref="lineChartRef"></div>
         </div>
         <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-            <el-table border :data="topk_preds" max-height="360px" height="360px">
-                <el-table-column label="Topk Prediction" width="390px">
+            <el-table border :data="topk_preds" max-height="310px" height="310px" @cell-click="copyCell">
+                <el-table-column label="Window" width="300">
                     <template #default="{ row }">
-                        {{ showPrediction(row.pred) }}
+                        {{ showWindow(row.window) }}
                     </template>
                 </el-table-column>
-                <el-table-column label="Label">
+                <el-table-column label="Label" width="100">
                     <template #default="{ row }">
                         E{{ row.label }}
                     </template>
                 </el-table-column>
-                <el-table-column label="Loss" width="250px">
+                <el-table-column label="Loss">
                     <template #default="{ row }">
                         {{ row.loss }}
                     </template>
@@ -36,17 +36,30 @@
 
 <script setup>
 import { Search } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import axios from "axios";
 import * as echarts from 'echarts';
 import { onMounted, ref } from "vue";
 
-const showPrediction = (preds) => {
+const copyCell = (row, column, cell, event) => {
+    const window = showWindow(row.window)
+    navigator.clipboard.writeText(window)
+        .then(() => {
+            ElMessage({
+                message: 'Copied window to clipboard',
+                type: 'success',
+                plain: true,
+            })
+        })
+}
+
+const showWindow = (window) => {
     let formattedString = "";
-    for (let i = 0; i < preds.length - 1; ++i) {
-        formattedString += `E${preds[i]}`;
-        formattedString += ' > ';
+    for (let i = 0; i < window.length - 1; i++) {
+        formattedString += `E${window[i]}`;
+        formattedString += ",";
     }
-    formattedString += `E${preds[preds.length - 1]}`;
+    formattedString += `E${window[window.length - 1]}`;
     return formattedString;
 }
 
@@ -68,6 +81,7 @@ const parseSeqAndDetect = async () => {
             "pred": resp.data.topk_preds[i],
             "prob": resp.data.topk_values[i],
             "label": session[10 + i],
+            "window": session.slice(i, i + 10),
         });
     }
 
