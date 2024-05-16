@@ -56,7 +56,7 @@ const showInput = (input) => {
     let formattedString = "";
     for (let i = 0; i < input.length - 1; i++) {
         formattedString += `E${input[i]}`;
-        formattedString += ", ";
+        formattedString += ",";
     }
     formattedString += `E${input[input.length - 1]}`;
     return formattedString;

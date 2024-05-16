@@ -1,39 +1,43 @@
 <template>
-    <div style="margin-left: 20px; margin-right: 50px; display: flex;">
+    <div style="margin-left: 20px; margin-right: 20px; display: flex;">
         <div id="diagram-container">
-            <div style="font-size: x-large; color: #409EFF; margin-left: 30px;">State Diagram</div>
+            <div style="font-size: x-large; color: #409EFF;">State Diagram</div>
             <svg id="graph-svg" :width="width" :height="height" :viewBox="[0, 0, width, height]"
                 style="max-width: 100%; height: auto; font: 12px sans-serif;"></svg>
-        </div>
-        <div id="node-info">
-            <el-card style="width: 300px; margin-top: 50px;">
-                <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
-                <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
-                <el-scrollbar max-height="120px">
-                    <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
-                        <span style="font-size: large;">E{{ key }}</span>
-                        <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
-                            count: {{ value }}
-                        </el-tag>
-                    </div>
-                </el-scrollbar>
-                <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="50" />
-                <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
-                <el-scrollbar max-height="120px">
-                    <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
-                        <span style="font-size: large;">E{{ key }}</span>
-                        <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
-                            count: {{ value }}
-                        </el-tag>
-                    </div>
-                </el-scrollbar>
-                <el-empty style="padding: 20px;" v-if="isEmpty(state_label[state])" :image-size="50" />
-            </el-card>
+            <div v-if="showNodeInfo" id="node-info">
+                <el-card style="width: 300px; margin-top: 50px;">
+                    <span style="display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: x-large; color: #202121;">S{{ state }}</span>
+                        <el-button circle :icon="Close" size="small" @click="closeNodeInfo"></el-button>
+                    </span>
+                    <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated input log keys</div>
+                    <el-scrollbar max-height="120px">
+                        <div v-for="(value, key) in state_input[state]" :key="key" class="state-x-item">
+                            <span style="font-size: large;">E{{ key }}</span>
+                            <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                                count: {{ value }}
+                            </el-tag>
+                        </div>
+                    </el-scrollbar>
+                    <el-empty style="padding: 20px;" v-if="isEmpty(state_input[state])" :image-size="50" />
+                    <div style="font-size: medium; border-bottom: 2px solid #3375b9;">associated prediction labels</div>
+                    <el-scrollbar max-height="120px">
+                        <div v-for="(value, key) in state_label[state]" :key="key" class="state-x-item">
+                            <span style="font-size: large;">E{{ key }}</span>
+                            <el-tag type="primary" effect="plain" round style="margin-right: 12px;">
+                                count: {{ value }}
+                            </el-tag>
+                        </div>
+                    </el-scrollbar>
+                    <el-empty style="padding: 20px;" v-if="isEmpty(state_label[state])" :image-size="50" />
+                </el-card>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
+import { Close } from '@element-plus/icons-vue'
 import axios from "axios";
 import * as d3 from "d3";
 import { onMounted, ref } from "vue";
@@ -41,6 +45,7 @@ import { onMounted, ref } from "vue";
 const state = ref(0)
 const state_input = ref([])
 const state_label = ref([])
+const showNodeInfo = ref(false)
 
 const { width, height } = defineProps({
     width: {
@@ -55,6 +60,10 @@ const { width, height } = defineProps({
 
 const isEmpty = (obj) => {
     return obj === null || obj === undefined || Object.keys(obj).length === 0;
+}
+
+const closeNodeInfo = () => {
+    showNodeInfo.value = false;
 }
 
 const colorScale = d3.scaleLinear()
@@ -102,6 +111,7 @@ function drag(simulation) {
 
 function clicked(event, d) {
     state.value = d.id;
+    showNodeInfo.value = true;
 }
 
 onMounted(async () => {
@@ -119,7 +129,7 @@ onMounted(async () => {
     const simulation = d3.forceSimulation(graph.nodes)
         .force("link", d3.forceLink(graph.links).id(d => d.id))
         .force("charge", d3.forceManyBody().strength(-500))
-        .force("center", d3.forceCenter(width / 2 + 60, height / 2 + 50))
+        .force("center", d3.forceCenter(width / 2, height / 2))
         .force("x", d3.forceX())
         .force("y", d3.forceY())
 
@@ -195,6 +205,17 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+#diagram-container {
+    position: relative;
+}
+
+#node-info {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 .state-x-item {
     display: flex;
     justify-content: space-between;

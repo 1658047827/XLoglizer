@@ -8,15 +8,16 @@
                 <el-button :icon="Search" circle @click="predict" />
             </div>
         </el-card>
+        <div style="font-size: large; margin-top: 15px; font-weight: bold;">Log Templates</div>
         <div style="box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 500px;">
-            <el-table :data="templates" border height="250" style="margin-top: 20px;">
+            <el-table :data="templates" border height="250" style="margin-top: 15px;">
                 <el-table-column prop="EventId" label="EventId" width="100" />
                 <el-table-column prop="EventTemplate" label="EventTemplate" width="1000" />
             </el-table>
         </div>
-        <div style="font-size: large; margin-top: 15px; font-weight: bold;">Loglizer Top K Prediction</div>
+        <div style="font-size: large; margin-top: 15px; font-weight: bold;">Loglizer Prediction</div>
         <div id="chart-container">
-            <div style="width: 100%; height: 300px" ref="chartRef"></div>
+            <div style="width: 100%; height: 250px" ref="chartRef"></div>
         </div>
         <div style="font-size: large; margin-bottom: 7px; font-weight: bold;">Abstract Trace</div>
         <div style="font-size: large; display: flex; justify-content: center;">
